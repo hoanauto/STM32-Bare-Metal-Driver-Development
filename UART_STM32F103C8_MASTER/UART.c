@@ -2,69 +2,70 @@
 #include "RCC.h"
 #include "GPIO.h"
 
-void UART1_Init(UART_Config_t *config)
+
+void UART_Init(USART_TypeDef *USARTx, uint32_t baudrate, uint8_t dataBits, uint8_t stopBits, char parity)
 {
-    USART_TypeDef *USARTx = config->Instance;
+	if(USART1 == USART1){
+    USARTx->CR1 &= ~(1 << 13); // Disable USART
 
-    // Enable clock cho USART và GPIO tuong ?ng
-        RCC->APB2ENR |= RCC_APB2Periph_GPIOA  | RCC_APB2Periph_USART1;
-        GPIO_Config(GPIOA, 9, MODE_OUTPUT_50MHZ, CNF_AF_PUSH_PULL, PULL_NONE); // TX
-        GPIO_Config(GPIOA,10, MODE_INPUT, CNF_PULL, PULL_UP); // RX
-    
-   
+    // Clock frequency (APB2: USART1, APB1: USART2/3)
+    uint32_t Fck = 72000000;
 
-    // Tính toán baudrate
-    uint32_t pclk;
-    if (USARTx == USART1)
-        pclk = 72000000; // APB2
-    else
-        pclk = 36000000; // APB1
+    float usartdiv = (float)Fck / (16 * baudrate);
+    uint32_t mantissa = (uint32_t)usartdiv;
+    uint32_t fraction = (uint32_t)((usartdiv - (float)mantissa) * 16);
+    USARTx->BRR = (mantissa << 4) | (fraction & 0x0F);
 
-    uint32_t USARTDIV = (pclk + (config->baudrate / 2)) / config->baudrate;
-    USARTx->BRR = USARTDIV;
-
-    // C?u hình word length
-    if (config->word_length == 9)
+    // Word length
+    if (dataBits == 9)
         USARTx->CR1 |= (1 << 12);
     else
         USARTx->CR1 &= ~(1 << 12);
 
-    // C?u hình parity
-    if (config->parity == UART_PARITY_NONE) {
-        USARTx->CR1 &= ~(1 << 10); // Parity disable
+    // Parity
+    if (parity == 0) {
+        USARTx->CR1 &= ~(1 << 10); // Disable parity
     } else {
-        USARTx->CR1 |= (1 << 10); // Parity enable
-        if (config->parity == UART_PARITY_ODD)
-            USARTx->CR1 |= (1 << 9);
-        else
-            USARTx->CR1 &= ~(1 << 9);
+        USARTx->CR1 |= (1 << 10);  // Enable parity
+        if (parity == 1)
+            USARTx->CR1 &= ~(1 << 9); // Even
+        else if (parity == 2)
+            USARTx->CR1 |= (1 << 9);  // Odd
     }
 
-    // Enable TX và RX
-    if (config->mode & UART_MODE_TX)
-        USARTx->CR1 |= (1 << 3); // TE
-    if (config->mode & UART_MODE_RX)
-        USARTx->CR1 |= (1 << 2); // RE
+    // Stop bits
+    if (stopBits == 1)
+			{USART1->CR2 |= (0 << 12);}
+		else if (stopBits == 0.5)
+			{USART1->CR2 |= (1 << 12);}
+		else if (stopBits == 2)
+			{USART1->CR2 |= (2 << 12);}
+		else if (stopBits == 1.5)
+			{USART1->CR2 |= (3 << 12);}
+
+    // Enable TX & RX
+    USARTx->CR1 |= (1 << 3) | (1 << 2);// cho truyen va nhan
 
     USARTx->CR1 |= (1 << 13); // Enable USART
 }
-
+}
 void UART_WriteChar(USART_TypeDef *USARTx, char c)
 {
-    while (!(USARTx->SR & (1 << 7))); // Wait TXE
+    while (!(USARTx->SR & (1 << 7))); // TXE empty
     USARTx->DR = c;
-    while (!(USARTx->SR & (1 << 6))); // Wait TC
-}
-
-char UART_ReadChar(USART_TypeDef *USARTx)
-{
-    while (!(USARTx->SR & (1 << 5))); // Wait RXNE
-    return USARTx->DR;
+    while (!(USARTx->SR & (1 << 6))); // TC truyen thanh cong
 }
 
 void UART_WriteString(USART_TypeDef *USARTx, const char *str)
 {
-    while (*str) {
+    while (*str) { // kiem tra null
         UART_WriteChar(USARTx, *str++);
+			
     }
+}
+
+char UART_ReadChar(USART_TypeDef *USARTx)
+{
+    while (!(USARTx->SR & (1 << 5))); // RXNE da co du lieu
+    return (char) USARTx->DR;
 }

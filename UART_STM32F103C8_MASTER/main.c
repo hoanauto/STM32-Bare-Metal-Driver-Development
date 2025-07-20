@@ -1,20 +1,25 @@
 #include "UART.h"
+#include "RCC.h"
+#include "GPIO.h"
+
+volatile char c;
 
 int main(void)
 {
-    UART_Config_t uart1;
-    uart1.Instance = USART1;
-    uart1.baudrate = 9600;
-    uart1.word_length = 8;
-    uart1.parity = UART_PARITY_NONE;
-    uart1.mode = UART_MODE_TX_RX;
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
 
-    UART1_Init(&uart1);
+    GPIO_Config(GPIOA, 9, MODE_OUTPUT_50MHZ, CNF_AF_PUSH_PULL, 0);   // TX
+    GPIO_Config(GPIOA, 10, MODE_INPUT, CNF_FLOATING, 0);             // RX
 
-    UART_WriteString(USART1, "Hello from UART!\r\n");
+    UART_Init(USART1, 115200, 8, 1, 0); // baudrate, 8 data bits, 1 stop bit, no parity
 
-    while (1) {
-        char c = UART_ReadChar(USART1); // nh?n ký t?
-        UART_WriteChar(USART1, c);      // ph?n h?i l?i ký t? dó
+    UART_WriteString(USART1, "UA \r\n");
+
+    while (1)
+    {
+        c = UART_ReadChar(USART1);      // Ch? nh?n m?t ký t?
+        UART_WriteChar(USART1, c);      // G?i l?i ký t? dó (echo)
     }
 }
