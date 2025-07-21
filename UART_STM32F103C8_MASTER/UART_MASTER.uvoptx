@@ -153,7 +153,7 @@
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>c,0x10</ItemText>
+          <ItemText>received_data</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>

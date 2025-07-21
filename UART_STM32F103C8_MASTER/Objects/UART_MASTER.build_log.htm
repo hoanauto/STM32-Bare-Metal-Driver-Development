@@ -27,20 +27,17 @@ Project File Date:  07/20/2025
 <h2>Output:</h2>
 *** Using Compiler 'V6.14', folder: 'C:\Keil_v5\ARM\ARMCLANG\Bin'
 Build target 'Target 1'
-main.c(2): warning: In file included from...
+main.c(3): warning: In file included from...
 ./RCC.h(45): warning: no newline at end of file [-Wnewline-eof]
 void RCC_APB2PeriphClockCmd(uint32_t RCC_APB2Periph, uint8_t NewState);
                                                                        ^
-main.c(5): warning: no previous extern declaration for non-static variable 'c' [-Wmissing-variable-declarations]
-volatile char c;
-              ^
-main.c(5): note: declare 'static' if the variable is not intended to be used outside of this translation unit
-volatile char c;
+main.c(21): warning: unused variable 'message' [-Wunused-variable]
+    char message[] = "Hello from STM32!\r\n";
          ^
 2 warnings generated.
 compiling main.c...
 linking...
-Program Size: Code=2448 RO-data=252 RW-data=0 ZI-data=1640  
+Program Size: Code=2428 RO-data=252 RW-data=0 ZI-data=1736  
 ".\Objects\UART_MASTER.axf" - 0 Error(s), 2 Warning(s).
 
 <h2>Software Packages used:</h2>
@@ -69,10 +66,10 @@ Package Vendor: Keil
 
    * Component: Keil::Device:Startup:1.0.0
       Include file:  RTE_Driver\Config\RTE_Device.h
-      Source file:   Device\Source\ARM\startup_stm32f10x_md.s
       Source file:   Device\Source\ARM\STM32F1xx_OPT.s
+      Source file:   Device\Source\ARM\startup_stm32f10x_md.s
       Source file:   Device\Source\system_stm32f10x.c
-Build Time Elapsed:  00:00:00
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

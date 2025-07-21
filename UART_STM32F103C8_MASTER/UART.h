@@ -38,5 +38,6 @@ void UART_Init(USART_TypeDef *USARTx, uint32_t baudrate, uint8_t dataBits, uint8
 void UART_WriteChar(USART_TypeDef *USARTx, char c);
 char UART_ReadChar(USART_TypeDef *USARTx);
 void UART_WriteString(USART_TypeDef *USARTx, const char *str);
+void UART_ReadString(USART_TypeDef *USARTx, char *buffer, uint16_t maxLength);
 
 #endif

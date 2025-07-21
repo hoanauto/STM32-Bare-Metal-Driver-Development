@@ -5,7 +5,7 @@
 
 void UART_Init(USART_TypeDef *USARTx, uint32_t baudrate, uint8_t dataBits, uint8_t stopBits, char parity)
 {
-	if(USART1 == USART1){
+	if(USARTx == USART1){
     USARTx->CR1 &= ~(1 << 13); // Disable USART
 
     // Clock frequency (APB2: USART1, APB1: USART2/3)
@@ -34,14 +34,14 @@ void UART_Init(USART_TypeDef *USARTx, uint32_t baudrate, uint8_t dataBits, uint8
     }
 
     // Stop bits
-    if (stopBits == 1)
-			{USART1->CR2 |= (0 << 12);}
-		else if (stopBits == 0.5)
-			{USART1->CR2 |= (1 << 12);}
-		else if (stopBits == 2)
-			{USART1->CR2 |= (2 << 12);}
-		else if (stopBits == 1.5)
-			{USART1->CR2 |= (3 << 12);}
+   USARTx->CR2 &= ~(3 << 12); // clear stop bits
+if (stopBits == 0.5)
+    USARTx->CR2 |= (1 << 12);
+else if (stopBits == 2)
+    USARTx->CR2 |= (2 << 12);
+else if (stopBits == 1.5)
+    USARTx->CR2 |= (3 << 12);
+// M?c d?nh 1 stop bit thì gi? nguyên
 
     // Enable TX & RX
     USARTx->CR1 |= (1 << 3) | (1 << 2);// cho truyen va nhan
@@ -49,6 +49,7 @@ void UART_Init(USART_TypeDef *USARTx, uint32_t baudrate, uint8_t dataBits, uint8
     USARTx->CR1 |= (1 << 13); // Enable USART
 }
 }
+
 void UART_WriteChar(USART_TypeDef *USARTx, char c)
 {
     while (!(USARTx->SR & (1 << 7))); // TXE empty
@@ -68,4 +69,16 @@ char UART_ReadChar(USART_TypeDef *USARTx)
 {
     while (!(USARTx->SR & (1 << 5))); // RXNE da co du lieu
     return (char) USARTx->DR;
+}
+void UART_ReadString(USART_TypeDef *USARTx, char *buffer, uint16_t maxLength)
+{
+    uint16_t i = 0;
+    char c;
+
+    do {
+        c = UART_ReadChar(USARTx); // nh?n t?ng ký t?
+        buffer[i++] = c;
+    } while (c != '\r' && i < (maxLength - 1)); // k?t thúc khi g?p ký t? Enter (CR)
+
+    buffer[i] = '\0'; // k?t thúc chu?i
 }
